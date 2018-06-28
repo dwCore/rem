@@ -1,0 +1,26 @@
+{
+  "name": "@dwcore/rem",
+  "version": "0.1.1",
+  "description": "Library for managing files in a dPack, within memory, through randomized entry.",
+  "contributors": [
+    "Jared Rice Sr. <jared@dwebs.io>",
+    "Distributed Webs Project, LLC. <labs@distributedwebs.org>"
+  ],
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "test": "standard && tape test.js"
+  },
+  "dependencies": {
+    "@dwcore/res": "dwcore/res#master",
+    "inherits": "*",
+    "is-options": "*"
+  },
+  "devDependencies": {
+    "standard": "*",
+    "tape": "*"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
