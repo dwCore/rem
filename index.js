@@ -1,8 +1,8 @@
-const DWebRandEntry = require('@dwcore/res')
+const DWRES = require('@dwcore/res')
 const isOptions = require('is-options')
 const inherits = require('inherits')
 
-const DWREM_PRESET_PAGE_SIZE = 1024 * 1024
+const DEFAULT_PAGE_SIZE = 1024 * 1024
 
 module.exports = DWREM
 
@@ -11,7 +11,7 @@ function DWREM (opts) {
   if (typeof opts === 'number') opts = {length: opts}
   if (!opts) opts = {}
 
-  DWebRandEntry.call(this)
+  DWRES.call(this)
 
   if (Buffer.isBuffer(opts)) {
     opts = {length: opts.length, buffer: opts}
@@ -19,45 +19,45 @@ function DWREM (opts) {
   if (!isOptions(opts)) opts = {}
 
   this.length = opts.length || 0
-  this.dwremPageSize = opts.length || opts.dwremPageSize || DWREM_PRESET_PAGE_SIZE
+  this.pageSize = opts.length || opts.pageSize || DEFAULT_PAGE_SIZE
   this.buffers = []
 
   if (opts.buffer) this.buffers.push(opts.buffer)
 }
 
-inherits(DWREM, DWebRandEntry)
+inherits(DWREM, DWRES)
 
-DWREM.prototype._dPackStat = function (req) {
+DWREM.prototype._stat = function (req) {
   callback(req, null, {size: this.length})
 }
 
-DWREM.prototype._dPackWrite = function (req) {
-  var i = Math.floor(req.offset / this.dwremPageSize)
-  var dwremRel = req.offset - i * this.dwremPageSize
-  var dwremStart = 0
+DWREM.prototype._write = function (req) {
+  var i = Math.floor(req.offset / this.pageSize)
+  var rel = req.offset - i * this.pageSize
+  var start = 0
 
   const len = req.offset + req.size
   if (len > this.length) this.length = len
 
-  while (dwremStart < req.size) {
-    const dwremPage = this._dwremPage(i++, true)
-    const dwremFree = this.dwremPageSize - dwremRel
-    const dwremEnd = dwremFree < (req.size - dwremStart)
-      ? dwremStart + dwremFree
+  while (start < req.size) {
+    const page = this._page(i++, true)
+    const free = this.pageSize - rel
+    const end = free < (req.size - start)
+      ? start + free
       : req.size
 
-    req.data.copy(dwremPage, dwremRel, dwremStart, dwremEnd)
-    dwremStart = dwremEnd
-    dwremRel = 0
+    req.data.copy(page, rel, start, end)
+    start = end
+    rel = 0
   }
 
   callback(req, null, null)
 }
 
-DWREM.prototype._dPackRead = function (req) {
-  var i = Math.floor(req.offset / this.dwremPageSize)
-  var dwremRel = req.offset - i * this.dwremPageSize
-  var dwremStart = 0
+DWREM.prototype._read = function (req) {
+  var i = Math.floor(req.offset / this.pageSize)
+  var rel = req.offset - i * this.pageSize
+  var start = 0
 
   if (req.offset + req.size > this.length) {
     return callback(req, new Error('Could not satisfy length'), null)
@@ -65,48 +65,48 @@ DWREM.prototype._dPackRead = function (req) {
 
   const data = Buffer.alloc(req.size)
 
-  while (dwremStart < req.size) {
-    const dwremPage = this._dwremPage(i++, false)
-    const dwremAvailable = this.dwremPageSize - dwremRel
-    const dwremRequired = req.size - dwremStart
-    const len = dwremAvailable < dwremRequired ? dwremAvailable : dwremRequired
+  while (start < req.size) {
+    const page = this._page(i++, false)
+    const avail = this.pageSize - rel
+    const wanted = req.size - start
+    const len = avail < wanted ? avail : wanted
 
-    if (dwremPage) dwremPage.copy(data, dwremStart, dwremRel, dwremRel + len)
-    dwremStart += len
-    dwremRel = 0
+    if (page) page.copy(data, start, rel, rel + len)
+    start += len
+    rel = 0
   }
 
   callback(req, null, data)
 }
 
-DWREM.prototype._dPackRemove = function (req) {
-  var i = Math.floor(req.offset / this.dwremPageSize)
-  var dwremRel = req.offset - i * this.dwremPageSize
-  var dwremStart = 0
+DWREM.prototype._del = function (req) {
+  var i = Math.floor(req.offset / this.pageSize)
+  var rel = req.offset - i * this.pageSize
+  var start = 0
 
-  while (dwremStart < req.size) {
-    if (dwremRel === 0 && req.size - dwremStart >= this.dwremPageSize) {
+  while (start < req.size) {
+    if (rel === 0 && req.size - start >= this.pageSize) {
       this.buffers[i++] = undefined
     }
 
-    dwremRel = 0
-    dwremStart += this.dwremPageSize - dwremRel
+    rel = 0
+    start += this.pageSize - rel
   }
 
   callback(req, null, null)
 }
 
-DWREM.prototype._dPackDestroy = function (req) {
+DWREM.prototype._destroy = function (req) {
   this._buffers = []
   this.length = 0
   callback(req, null, null)
 }
 
-DWREM.prototype._dwremPage = function (i, upsert) {
-  var dwremPage = this.buffers[i]
-  if (dwremPage || !upsert) return dwremPage
-  dwremPage = this.buffers[i] = Buffer.alloc(this.dwremPageSize)
-  return dwremPage
+DWREM.prototype._page = function (i, upsert) {
+  var page = this.buffers[i]
+  if (page || !upsert) return page
+  page = this.buffers[i] = Buffer.alloc(this.pageSize)
+  return page
 }
 
 function callback (req, err, data) {

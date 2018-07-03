@@ -1,53 +1,53 @@
 const tape = require('tape')
-const dwrem = require('./')
+const DWREM = require('./')
 
-tape('dwREM Tests: dWeb File Write/Read', function (t) {
-  const dWebFile = dwrem()
+tape('DWREM Tests: dWeb File Write/Read', function (t) {
+  const file = DWREM()
 
-  dWebFile.dWebWrite(0, Buffer.from('hello'), function (err) {
-    t.error(err, 'dwREM Test Failed! ')
-    dWebFile.dWebRead(0, 5, function (err, buf) {
-      t.error(err, 'dwREM Test Failed! ')
+  file.write(0, Buffer.from('hello'), function (err) {
+    t.error(err, 'DWREM Test Failed! ')
+    file.read(0, 5, function (err, buf) {
+      t.error(err, 'DWREM Test Failed! ')
       t.same(buf, Buffer.from('hello'))
       t.end()
     })
   })
 })
 
-tape('dwREM Tests: dWeb File Read Empty', function (t) {
-  const dWebFile = dwrem()
+tape('DWREM Tests: dWeb File Read Empty', function (t) {
+  const file = DWREM()
 
-  dWebFile.dWebRead(0, 0, function (err, buf) {
-    t.error(err, 'dwREM Test Failed! ')
+  file.read(0, 0, function (err, buf) {
+    t.error(err, 'DWREM Test Failed! ')
     t.same(buf, Buffer.alloc(0), 'empty buffer')
     t.end()
   })
 })
 
-tape('dwREM Tests: dWeb File Read Range > dWeb File', function (t) {
-  const dWebFile = dwrem()
+tape('DWREM Tests: dWeb File Read Range > dWeb File', function (t) {
+  const file = DWREM()
 
-  dWebFile.dWebRead(0, 5, function (err, buf) {
-    t.ok(err, 'dwREM Test Failed! Did Not Pass Quality Requirement!')
+  file.read(0, 5, function (err, buf) {
+    t.ok(err, 'DWREM Test Failed! Did Not Pass Quality Requirement!')
     t.end()
   })
 })
 
-tape('dwREM Tests: dWeb File Random Entry Write/Read', function (t) {
-  const dWebFile = dwrem()
+tape('DWREM Tests: dWeb File Random Entry Write/Read', function (t) {
+  const file = DWREM()
 
-  dWebFile.dWebWrite(10, Buffer.from('hi'), function (err) {
-    t.error(err, 'dwREM Test Failed! ')
-    dWebFile.dWebWrite(0, Buffer.from('hello'), function (err) {
-      t.error(err, 'dwREM Test Failed! ')
-      dWebFile.dWebRead(10, 2, function (err, buf) {
-        t.error(err, 'dwREM Test Failed! ')
+  file.write(10, Buffer.from('hi'), function (err) {
+    t.error(err, 'DWREM Test Failed! ')
+    file.write(0, Buffer.from('hello'), function (err) {
+      t.error(err, 'DWREM Test Failed! ')
+      file.read(10, 2, function (err, buf) {
+        t.error(err, 'DWREM Test Failed! ')
         t.same(buf, Buffer.from('hi'))
-        dWebFile.dWebRead(0, 5, function (err, buf) {
-          t.error(err, 'dwREM Test Failed! ')
+        file.read(0, 5, function (err, buf) {
+          t.error(err, 'DWREM Test Failed! ')
           t.same(buf, Buffer.from('hello'))
-          dWebFile.dWebRead(5, 5, function (err, buf) {
-            t.error(err, 'dwREM Test Failed! ')
+          file.read(5, 5, function (err, buf) {
+            t.error(err, 'DWREM Test Failed! ')
             t.same(buf, Buffer.from([0, 0, 0, 0, 0]))
             t.end()
           })
@@ -57,10 +57,10 @@ tape('dwREM Tests: dWeb File Random Entry Write/Read', function (t) {
   })
 })
 
-tape('dwREM Tests: dWeb File Buffer Constructor', function (t) {
-  const dWebFile = dwrem(Buffer.from('contents'))
+tape('DWREM Tests: dWeb File Buffer Constructor', function (t) {
+  const file = DWREM(Buffer.from('contents'))
 
-  dWebFile.dWebRead(0, 7, function (err, buf) {
+  file.read(0, 7, function (err, buf) {
     t.error(err)
     t.deepEqual(buf, Buffer.from('content'))
     t.end()
