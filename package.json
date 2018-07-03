@@ -12,7 +12,7 @@
     "test": "standard && tape test.js"
   },
   "dependencies": {
-    "@dwcore/res": "dwcore/res#master",
+    "@dwcore/res": "*",
     "inherits": "*",
     "is-options": "*"
   },
