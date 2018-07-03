@@ -1,6 +1,6 @@
 {
   "name": "@dwcore/rem",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Library for managing files in a dPack, within memory, through randomized entry.",
   "contributors": [
     "Jared Rice Sr. <jared@dwebs.io>",
