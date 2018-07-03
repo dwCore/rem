@@ -1,7 +1,7 @@
-const dwrem = require('./index')
+const DWREM = require('./index')
 
-const dPackMem = dwrem()
+const storage = DWREM()
 
-dPackMemStorage.dPackWrite(0, Buffer.from('Greetings, martian'), function () {
-  dPackMemStorage.dPackRead(0, 11, (_, data) => console.log(data.toString()))
+storage.write(0, Buffer.from('Greetings, martian'), function () {
+  storage.read(0, 11, (_, data) => console.log(data.toString()))
 })
